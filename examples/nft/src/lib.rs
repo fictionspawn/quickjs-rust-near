@@ -152,6 +152,16 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
+
+    // Ensure only "thisaccount.testnet" can call the JavaScript function
+    let expected_predecessor: AccountId = "thisaccount.testnet".parse().unwrap();
+    let predecessor = env::predecessor_account_id();
+    assert_eq!(
+        predecessor, expected_predecessor,
+        "Unauthorized access: only {} can mint NFTs using JavaScript.",
+        expected_predecessor
+    );
+
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
         unsafe {
