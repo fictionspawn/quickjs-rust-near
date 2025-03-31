@@ -9,3 +9,13 @@ wabt-*
 emsdk
 quickjs-*
 emsdk
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+bin
+*.mp4
+file_list.txt
+freeze_frames
+example-contracts.car
+yarn-error.log

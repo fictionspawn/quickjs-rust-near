@@ -1,4 +1,5 @@
 {
+    "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
     "features": {
         "ghcr.io/devcontainers/features/rust:1": {},
         "ghcr.io/near/near-devcontainers/features/cargo-near:latest": {},
@@ -13,7 +14,8 @@
                 "github.vscode-github-actions",
                 "vadimcn.vscode-lldb",
                 "ms-vscode.cpptools-extension-pack",
-                "ms-vscode.makefile-tools"
+                "ms-vscode.makefile-tools",
+                "ms-playwright.playwright"
             ]
         }
     },
