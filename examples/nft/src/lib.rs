@@ -152,7 +152,7 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-
+if env::predecessor_account_id() == "klokkeklart.testnet" {
     // Ensure only "thisaccount.testnet" can call the JavaScript function
     let expected_predecessor: AccountId = "thisaccount.testnet".parse().unwrap();
     let predecessor = env::predecessor_account_id();
@@ -179,7 +179,7 @@ impl Contract {
             self.tokens
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
-    }
+    }}
 
     #[payable]
     pub fn nft_burn(&mut self, token_id: TokenId) {

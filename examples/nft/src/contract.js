@@ -1,64 +1,17 @@
-const icon_svg_base64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5IDkiPgogICAgPHJlY3QgeT0iMCIgd2lkdGg9IjkiIGhlaWdodD0iMyIgZmlsbD0iIzBiZiIvPgogICAgPHJlY3QgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMyIgZmlsbD0iI2Y4MiIvPgogICAgPHJlY3QgeD0iNiIgeT0iMyIgd2lkdGg9IjMiIGhlaWdodD0iMyIgZmlsbD0iIzMzMyIgLz4KICAgIDxyZWN0IHk9IjYiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiMyYWEiLz4KICAgIDxyZWN0IHg9IjMiIHk9IjYiIHdpZHRoPSI2IiBoZWlnaHQ9IjMiIGZpbGw9IiM2NjYiIC8+Cjwvc3ZnPg==';
+//const icon_svg_base64 = 'PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA5IDkiPgogICAgPHJlY3QgeT0iMCIgd2lkdGg9IjkiIGhlaWdodD0iMyIgZmlsbD0iIzBiZiIvPgogICAgPHJlY3QgeT0iMyIgd2lkdGg9IjYiIGhlaWdodD0iMyIgZmlsbD0iI2Y4MiIvPgogICAgPHJlY3QgeD0iNiIgeT0iMyIgd2lkdGg9IjMiIGhlaWdodD0iMyIgZmlsbD0iIzMzMyIgLz4KICAgIDxyZWN0IHk9IjYiIHdpZHRoPSIzIiBoZWlnaHQ9IjMiIGZpbGw9IiMyYWEiLz4KICAgIDxyZWN0IHg9IjMiIHk9IjYiIHdpZHRoPSI2IiBoZWlnaHQ9IjMiIGZpbGw9IiM2NjYiIC8+Cjwvc3ZnPg==';
 
 export function web4_get() {
   const request = JSON.parse(env.input()).request;
 
   let response;
-  if (request.path == '/serviceworker.js') {
+	let game_url = "https://ipfs.web4.near.page/ipfs/bafybeidrv64w6zd5c2z2st3kqlzynqjimdnvewpacdps5lpp4jykah4c5m/" 
+  if (request.path.includes == '/.mjs') {
     response = {
-      contentType: "application/javascript; charset=UTF-8",
-      body: env.get_content_base64(request.path)
-    };
-  } else if (request.path.indexOf('/musicwasms/') == 0) {
-    response = {
-      contentType: "application/wasm",
-      body: env.get_content_base64(request.path)
-    };
-  } else if (request.path == '/webassemblymusicsources.zip') {
-    if (env.nft_supply_for_owner(request.query.account_id[0]) > 0) {
-      const validSignature = env.verify_signed_message(
-        request.query.message[0],
-        request.query.signature[0],
-        request.query.account_id[0]
-      );
-
-      if (validSignature) {
-        response = {
-          contentType: "application/zip",
-          body: env.get_content_base64(request.path)
-        };
-      } else {
-        response = {
-          contentType: "text/plain",
-          body: env.base64_encode("INVALID SIGNATURE"),
-        };
-      }
-    } else {
-      response = {
-        contentType: "text/plain",
-        body: env.base64_encode("NOT OWNER"),
-      };
-    }
-  } else if (request.path == '/icon.svg' || request.path == '/assets/icon.svg') {
-    response = {
-      contentType: "image/svg+xml",
-      body: icon_svg_base64
-    };
-  } else if (request.path == '/nftowners.json') {
-    const tokens = JSON.parse(env.nft_tokens(0, 100));
-    response = {
-      contentType: "application/json; charset=UTF-8",
-      body: env.base64_encode(JSON.stringify(tokens.map(t => ({ token_id: t.token_id, owner_id: t.owner_id }))))
-    };
-  } else if (request.path.endsWith('.html')) {
+      contentType: "text/javascript; charset=UTF-8",
+      body: game_url + request.path
     response = {
       contentType: "text/html; charset=UTF-8",
-      body: env.get_content_base64(request.path)
-    };
-  } else {
-    response = {
-      contentType: "text/html; charset=UTF-8",
-      body: env.get_content_base64('/index.html')
+      body: request.path = game_url + "GameJsTest.html" 
     };
   }
   env.value_return(JSON.stringify(response));
@@ -72,8 +25,8 @@ export function store_signing_key() {
 
 export function nft_metadata() {
   return {
-    name: "WebAssembly Music by Peter Salomonsen",
-    symbol: "PSMUSIC",
+    name: "CloseNodes NFT",
+    symbol: "CLOSE",
     icon: `data:image/svg+xml;base64,${icon_svg_base64}`,
     base_uri: null,
     reference: null,
