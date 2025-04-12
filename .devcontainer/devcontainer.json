@@ -21,3 +21,8 @@
     },
     "postCreateCommand": "./.devcontainer/install-dependencies.sh"
 }
+"features": {
+    "ghcr.io/devcontainers/features/sshd:1": {
+        "version": "latest"
+    }
+}
