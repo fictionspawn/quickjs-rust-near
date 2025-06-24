@@ -152,6 +152,9 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
+        if env::predecessor_account_id() != "hutte-tu.testnet" {
+            panic!("Can't mint without logging in!");
+        }
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
         unsafe {
