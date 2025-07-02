@@ -40,7 +40,7 @@ enum StorageKey {
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
-    original_minters: LookupMap<AccountId, String>,
+    original_minters: Vector<Vector<AccountId, String>>,
     token_ids_minted: Vector<String>,
 }
 
