@@ -237,8 +237,8 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
-                self.original_minters = LookupSet::new(b"o".to_vec()),
-                self.token_ids_minted = LookupSet::new(b"t".to_vec()),
+           //     self.original_minters = LookupSet::new(b"o".to_vec()),
+           //     self.token_ids_minted = LookupSet::new(b"t".to_vec()),
             ),
         }
     }
