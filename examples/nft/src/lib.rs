@@ -187,14 +187,14 @@ impl Contract {
         }
         self.original_minters.insert(&(minter, token_name));
         self.original_minters.insert(&token_id);
-
+/*
     pub fn get_original_minters(&self) -> Vec<(AccountId, String)> {
         self.original_minters.iter().collect()
     }
 
     pub fn get_token_ids_minted(&self) -> Vec<String> {
         self.token_ids_minted.iter().collect()
-    }
+    }*/
     }
 
     #[payable]
