@@ -40,8 +40,8 @@ enum StorageKey {
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
-    original_minters: UnorderedSet<AccountId, String>,
-    token_ids_minted: LookupSet<String>,
+    original_minters: LookupSet<AccountId, String>,
+    token_ids_minted: UnorderedSet<String>,
 }
 
 static mut CONTRACT_REF: *const Contract = 0 as *const Contract;
