@@ -34,7 +34,7 @@ enum StorageKey {
     Enumeration,
     Approval,
 }
-
+// testing
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 #[borsh(crate="near_sdk::borsh")]
