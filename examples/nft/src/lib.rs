@@ -20,7 +20,7 @@ use std::ffi::CStr;
 use std::ffi::CString;
 
 use near_sdk::collections::{LookupSet, UnorderedSet};
-use near_sdk::{env, near_bindgen, AccountId, Promise, Gas};
+use near_sdk::{Gas};
 use near_sdk::serde_json::{json, Value};
 
 const JS_BYTECODE_STORAGE_KEY: &[u8] = b"JS";
