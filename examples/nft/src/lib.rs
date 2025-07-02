@@ -19,7 +19,7 @@ use quickjs_rust_near::jslib::{
 use std::ffi::CStr;
 use std::ffi::CString;
 
-use near_sdk::collections::{LookupMap, Vector};
+use near_sdk::collections::{LookupMap, UnorderedSet};
 use near_sdk::{Gas};
 use near_sdk::serde_json::{json, Value};
 
@@ -40,8 +40,8 @@ enum StorageKey {
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
-    original_minters: Enum<Vector<AccountId>, Vector<String>>,
-    token_ids_minted: Vector<String>,
+    original_minters: LookupMap<AccountId, UnorderedSet<String>>
+    token_ids_minted: UnorderedSet<String>,
 }
 
 static mut CONTRACT_REF: *const Contract = 0 as *const Contract;
