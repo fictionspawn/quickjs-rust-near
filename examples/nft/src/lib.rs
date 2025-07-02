@@ -19,6 +19,10 @@ use quickjs_rust_near::jslib::{
 use std::ffi::CStr;
 use std::ffi::CString;
 
+use near_sdk::collections::{LookupSet, UnorderedSet};
+use near_sdk::{env, near_bindgen, AccountId, Promise, Gas};
+use near_sdk::serde_json::{json, Value};
+
 const JS_BYTECODE_STORAGE_KEY: &[u8] = b"JS";
 const JS_CONTENT_RESOURCE_PREFIX: &str = "JSC_";
 
@@ -36,6 +40,8 @@ enum StorageKey {
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
+    original_minters: LookupSet<AccountId, String>,
+    token_ids_minted: LookupSet<String>,
 }
 
 static mut CONTRACT_REF: *const Contract = 0 as *const Contract;
@@ -152,9 +158,16 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-        if env::predecessor_account_id() != "nftspree.testnet" {
+/*        if env::predecessor_account_id() != "nftspree.testnet" {
             panic!("Unautorised, only cross-contract can mint!");
+        }*/
+        let token_name = token_id.replace(char::is_numeric, "");
+        let minter = env::signer_account_id();
+        
+        if self.original_minters.contains(&(minter.clone(), token_name.clone())) {
+            env::panic_str("Account has alrady minted this NFT");
         }
+
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
         unsafe {
@@ -172,6 +185,16 @@ impl Contract {
             self.tokens
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
+        self.original_minters.insert(&(minter, token_name));
+        self.original_minters.insert(&token_id);
+
+    pub fn get_original_minters(&self) -> Vec<(AccountId, String)> {
+        self.original_minters.iter().collect()
+    }
+
+    pub fn get_token_ids_minted(&self) -> Vec<String> {
+        self.token_ids_minted.iter().collect()
+    }
     }
 
     #[payable]
@@ -214,6 +237,8 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
+                original_minters: LookupSet::new(b"o".to_vec()),
+                token_ids_minted: LookupSet::new(b"t".to_vec()),
             ),
         }
     }
