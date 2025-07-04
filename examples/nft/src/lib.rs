@@ -19,10 +19,6 @@ use quickjs_rust_near::jslib::{
 use std::ffi::CStr;
 use std::ffi::CString;
 
-use near_sdk::collections::{LookupMap, UnorderedSet};
-use near_sdk::{Gas};
-use near_sdk::serde_json::{json, Value};
-
 const JS_BYTECODE_STORAGE_KEY: &[u8] = b"JS";
 const JS_CONTENT_RESOURCE_PREFIX: &str = "JSC_";
 
@@ -34,14 +30,12 @@ enum StorageKey {
     Enumeration,
     Approval,
 }
-// testing
+
 #[near_bindgen]
 #[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
-    original_minters: LookupMap<AccountId, UnorderedSet<String>>,
-    token_ids_minted: UnorderedSet<String>,
 }
 
 static mut CONTRACT_REF: *const Contract = 0 as *const Contract;
@@ -158,15 +152,15 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-/*        if env::predecessor_account_id() != "nftspree.testnet" {
-            panic!("Unautorised, only cross-contract can mint!");
-        }*/
-        let token_name = token_id.replace(char::is_numeric, "");
-        let minter = env::signer_account_id();
-        
-        if self.original_minters.contains(&(minter.clone(), token_name.clone())) {
-            env::panic_str("Account has alrady minted this NFT");
-        }
+        if env::predecessor_account_id() != "nftspree.testnet" {                              panic!("Unautorised, only cross-contract can mint!");                           }
+    // Ensure only "thisaccount.testnet" can call the JavaScript function
+    let expected_predecessor: AccountId = "thisaccount.testnet".parse().unwrap();
+    let predecessor = env::predecessor_account_id();
+    assert_eq!(
+        predecessor, expected_predecessor,
+        "Unauthorized access: only {} can mint NFTs using JavaScript.",
+        expected_predecessor
+    );
 
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
@@ -185,16 +179,6 @@ impl Contract {
             self.tokens
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
-        self.original_minters.insert(&(minter, token_name));
-        self.original_minters.insert(&token_id);
-/*
-    pub fn get_original_minters(&self) -> Vec<(AccountId, String)> {
-        self.original_minters.iter().collect()
-    }
-
-    pub fn get_token_ids_minted(&self) -> Vec<String> {
-        self.token_ids_minted.iter().collect()
-    }*/
     }
 
     #[payable]
@@ -237,8 +221,6 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
-           //     self.original_minters = LookupSet::new(b"o".to_vec()),
-           //     self.token_ids_minted = LookupSet::new(b"t".to_vec()),
             ),
         }
     }
