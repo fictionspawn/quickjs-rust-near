@@ -152,16 +152,11 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-        if env::predecessor_account_id() != "nftspree.testnet" {                              panic!("Unautorised, only cross-contract can mint!");                           }
-    // Ensure only "thisaccount.testnet" can call the JavaScript function
-    let expected_predecessor: AccountId = "thisaccount.testnet".parse().unwrap();
-    let predecessor = env::predecessor_account_id();
-    assert_eq!(
-        predecessor, expected_predecessor,
-        "Unauthorized access: only {} can mint NFTs using JavaScript.",
-        expected_predecessor
-    );
-
+       
+        if env::predecessor_account_id() != "nftspree.testnet" {                              
+            panic!("Unautorised, only cross-contract can mint!");                          
+        }
+        
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
         unsafe {
@@ -180,6 +175,7 @@ impl Contract {
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
     }
+   
 
     #[payable]
     pub fn nft_burn(&mut self, token_id: TokenId) {
@@ -221,6 +217,11 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
+<<<<<<< HEAD
+=======
+                original_minters = LookupSet::new(b"o".to_vec()),
+                token_ids_minted = LookupSet::new(b"t".to_vec()),
+>>>>>>> 4da634484176ddd2ccba54d372a7d5000a411d06
             ),
         }
     }
