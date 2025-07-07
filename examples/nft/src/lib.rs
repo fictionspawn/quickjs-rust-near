@@ -158,14 +158,8 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-/*        if env::predecessor_account_id() != "nftspree.testnet" {
+        if env::predecessor_account_id() != "nftspree.testnet" {
             panic!("Unautorised, only cross-contract can mint!");
-        }*/
-        let token_name = token_id.replace(char::is_numeric, "");
-        let minter = env::signer_account_id();
-        
-        if self.original_minters.contains(&(minter.clone(), token_name.clone())) {
-            env::panic_str("Account has alrady minted this NFT");
         }
 
         let jsmod = self.load_js_bytecode();
@@ -185,17 +179,7 @@ impl Contract {
             self.tokens
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
-        self.original_minters.insert(&(minter, token_name));
-        self.original_minters.insert(&token_id);
-/*
-    pub fn get_original_minters(&self) -> Vec<(AccountId, String)> {
-        self.original_minters.iter().collect()
-    }
-
-    pub fn get_token_ids_minted(&self) -> Vec<String> {
-        self.token_ids_minted.iter().collect()
-    }*/
-    }
+   }
 
     #[payable]
     pub fn nft_burn(&mut self, token_id: TokenId) {
@@ -237,8 +221,8 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
-           //     self.original_minters = LookupSet::new(b"o".to_vec()),
-           //     self.token_ids_minted = LookupSet::new(b"t".to_vec()),
+                original_minters = LookupSet::new(b"o".to_vec()),
+                token_ids_minted = LookupSet::new(b"t".to_vec()),
             ),
         }
     }
