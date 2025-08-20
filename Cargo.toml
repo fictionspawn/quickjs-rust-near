@@ -39,6 +39,5 @@ members = [
   "examples/minimumweb4",
   "examples/purejs",
   "testenv",
-  "cross-contract-calls/contract-simple-rs",
   "."
 ]
