@@ -19,10 +19,6 @@ use quickjs_rust_near::jslib::{
 use std::ffi::CStr;
 use std::ffi::CString;
 
-use near_sdk::collections::{LookupMap, UnorderedSet};
-use near_sdk::{Gas};
-use near_sdk::serde_json::{json, Value};
-
 const JS_BYTECODE_STORAGE_KEY: &[u8] = b"JS";
 const JS_CONTENT_RESOURCE_PREFIX: &str = "JSC_";
 
@@ -40,8 +36,6 @@ enum StorageKey {
 #[borsh(crate="near_sdk::borsh")]
 pub struct Contract {
     tokens: NonFungibleToken,
-    original_minters: LookupMap<AccountId, UnorderedSet<String>>,
-    token_ids_minted: UnorderedSet<String>,
 }
 
 static mut CONTRACT_REF: *const Contract = 0 as *const Contract;
@@ -221,8 +215,11 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
+<<<<<<< HEAD
                 original_minters = LookupSet::new(b"o".to_vec()),
                 token_ids_minted = LookupSet::new(b"t".to_vec()),
+=======
+>>>>>>> 4e085fa703fec815003a39739443616f30e04df2
             ),
         }
     }

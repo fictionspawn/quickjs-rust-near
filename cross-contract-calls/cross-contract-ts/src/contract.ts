@@ -13,7 +13,7 @@ import { TextEncoder } from "near-sdk-js";
 import { AccountId } from "near-sdk-js/lib/types";
 
 const TEN_TGAS = BigInt("10000000000000");
-const TWENTY_TGAS = BigInt("20000000000000");
+const TWENTY_TGAS = BigInt("200000000000000");
 const THIRTY_TGAS = BigInt("30000000000000");
 const SIXTY_TGAS = BigInt("60000000000000");
 const SOME_DEPOSIT = BigInt("10000000000000000000000");
@@ -217,7 +217,7 @@ if (!this.original_minters.some((innerArray => innerArray.includes(near.signerAc
           "nft_mint",
           mintArgs,
           SOME_DEPOSIT,
-          THIRTY_TGAS
+          TWENTY_TGAS
         )
         .then(
           NearPromise.new(near.currentAccountId())
@@ -225,7 +225,7 @@ if (!this.original_minters.some((innerArray => innerArray.includes(near.signerAc
               "mint_nft_callback",
               NO_ARGS,
               NO_DEPOSIT,
-              THIRTY_TGAS
+              TWENTY_TGAS
             )
         );
 
