@@ -152,13 +152,9 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-        if env::predecessor_account_id() != "nftspree.testnet" {
-            panic!("Unautorised, only cross-contract can mint!");
-        }
-
        
         if env::predecessor_account_id() != "nftspree.testnet" {                              
-            panic!("Unautorised, only cross-contract can mint!");                          
+            panic!("Unauthorised, only cross-contract can mint!");                          
         }
         
         let jsmod = self.load_js_bytecode();
@@ -220,10 +216,6 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
-                original_minters = LookupSet::new(b"o".to_vec()),
-                token_ids_minted = LookupSet::new(b"t".to_vec()),
-                original_minters = LookupSet::new(b"o".to_vec()),
-                token_ids_minted = LookupSet::new(b"t".to_vec()),
             ),
         }
     }
