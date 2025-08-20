@@ -11,7 +11,7 @@ export function web4_get() {
           } else if (request.path.includes(".mjs")) {
           response = {
       contentType: "text/javascript; charset=UTF-8",
-      bodyUrl: "https://ipfs.web4.near.page/ipfs/bafybeibfqrarmd7cbrdwt6zs44fib3g5rfgfpqfqz3w4ig5vrwtu6sutoq" + request.path // bafybeih4nfsst5v3vr2y2d2b7v2hpkh4jo7xqqbsd6kejezcr2dpjlqj5i" 
+      bodyUrl: "https://ipfs.web4.near.page/ipfs/bafybeibfqrarmd7cbrdwt6zs44fib3g5rfgfpqfqz3w4ig5vrwtu6sutoq" + request.path 
           }
           } else {
           response = {

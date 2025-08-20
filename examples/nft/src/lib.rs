@@ -152,18 +152,15 @@ impl Contract {
 
     #[payable]
     pub fn nft_mint(&mut self, token_id: TokenId, token_owner_id: AccountId) -> Token {
-<<<<<<< HEAD
         if env::predecessor_account_id() != "nftspree.testnet" {
             panic!("Unautorised, only cross-contract can mint!");
         }
 
-=======
        
         if env::predecessor_account_id() != "nftspree.testnet" {                              
             panic!("Unautorised, only cross-contract can mint!");                          
         }
         
->>>>>>> 55d87b383b85c90144d5ee4ab04c5e5ad0121ad7
         let jsmod = self.load_js_bytecode();
         let nft_mint_str = CString::new("nft_mint").unwrap();
         unsafe {
@@ -181,12 +178,7 @@ impl Contract {
             self.tokens
                 .internal_mint(token_id, token_owner_id, Some(token_metadata))
         }
-<<<<<<< HEAD
-   }
-=======
     }
-   
->>>>>>> 55d87b383b85c90144d5ee4ab04c5e5ad0121ad7
 
     #[payable]
     pub fn nft_burn(&mut self, token_id: TokenId) {
