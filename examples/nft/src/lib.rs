@@ -220,18 +220,10 @@ impl Contract {
                 Some(StorageKey::TokenMetadata),
                 Some(StorageKey::Enumeration),
                 Some(StorageKey::Approval),
-<<<<<<< HEAD
-<<<<<<< HEAD
                 original_minters = LookupSet::new(b"o".to_vec()),
                 token_ids_minted = LookupSet::new(b"t".to_vec()),
-=======
->>>>>>> 4e085fa703fec815003a39739443616f30e04df2
-=======
-=======
                 original_minters = LookupSet::new(b"o".to_vec()),
                 token_ids_minted = LookupSet::new(b"t".to_vec()),
->>>>>>> 4da634484176ddd2ccba54d372a7d5000a411d06
->>>>>>> 55d87b383b85c90144d5ee4ab04c5e5ad0121ad7
             ),
         }
     }
