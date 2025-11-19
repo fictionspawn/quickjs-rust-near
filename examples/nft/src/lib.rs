@@ -1,4 +1,5 @@
 mod payouts;
+mod crypto;
 use near_contract_standards::non_fungible_token::events::NftBurn;
 use near_contract_standards::non_fungible_token::metadata::{
     NFTContractMetadata, NonFungibleTokenMetadataProvider, TokenMetadata, NFT_METADATA_SPEC,
@@ -9,7 +10,7 @@ use near_sdk::borsh::{BorshDeserialize, BorshSerialize};
 use near_sdk::json_types::U128;
 use near_sdk::{near,
     assert_one_yocto, base64, env, near_bindgen, serde_json, AccountId, BorshStorageKey,
-    PanicOnDefault, Promise, PromiseOrValue,
+    NearToken, PanicOnDefault, Promise, PromiseOrValue,
 };
 use payouts::{Payout, Payouts};
 use quickjs_rust_near::jslib::{
@@ -21,6 +22,7 @@ use std::ffi::CString;
 
 const JS_BYTECODE_STORAGE_KEY: &[u8] = b"JS";
 const JS_CONTENT_RESOURCE_PREFIX: &str = "JSC_";
+const ENCRYPTED_CONTENT_STORAGE_PREFIX: &str = "ENC_";
 
 #[derive(BorshSerialize, BorshStorageKey)]
 #[borsh(crate="near_sdk::borsh")]
@@ -95,6 +97,196 @@ impl Contract {
             },
             3,
         );
+
+        // Crypto functions for encrypted content
+        add_function_to_js(
+            "ristretto_basepoint_mul",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let scalar_b64 = arg_to_str(ctx, 0, argv);
+                let scalar_bytes = base64::decode(&scalar_b64).unwrap_or_else(|_| vec![]);
+
+                match crypto::ristretto_basepoint_mul(&scalar_bytes) {
+                    Ok(result) => to_js_string(ctx, base64::encode(result)),
+                    Err(e) => {
+                        env::log_str(&format!("ristretto_basepoint_mul error: {}", e));
+                        to_js_string(ctx, String::new())
+                    }
+                }
+            },
+            1,
+        );
+
+        add_function_to_js(
+            "ristretto_scalar_mul",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let scalar_b64 = arg_to_str(ctx, 0, argv);
+                let point_b64 = arg_to_str(ctx, 1, argv);
+                let scalar_bytes = base64::decode(&scalar_b64).unwrap_or_else(|_| vec![]);
+                let point_bytes = base64::decode(&point_b64).unwrap_or_else(|_| vec![]);
+
+                match crypto::ristretto_scalar_mul(&scalar_bytes, &point_bytes) {
+                    Ok(result) => to_js_string(ctx, base64::encode(result)),
+                    Err(e) => {
+                        env::log_str(&format!("ristretto_scalar_mul error: {}", e));
+                        to_js_string(ctx, String::new())
+                    }
+                }
+            },
+            2,
+        );
+
+        add_function_to_js(
+            "ristretto_point_add",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let point1_b64 = arg_to_str(ctx, 0, argv);
+                let point2_b64 = arg_to_str(ctx, 1, argv);
+                let point1_bytes = base64::decode(&point1_b64).unwrap_or_else(|_| vec![]);
+                let point2_bytes = base64::decode(&point2_b64).unwrap_or_else(|_| vec![]);
+
+                match crypto::ristretto_point_add(&point1_bytes, &point2_bytes) {
+                    Ok(result) => to_js_string(ctx, base64::encode(result)),
+                    Err(e) => {
+                        env::log_str(&format!("ristretto_point_add error: {}", e));
+                        to_js_string(ctx, String::new())
+                    }
+                }
+            },
+            2,
+        );
+
+        add_function_to_js(
+            "ristretto_point_sub",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let point1_b64 = arg_to_str(ctx, 0, argv);
+                let point2_b64 = arg_to_str(ctx, 1, argv);
+                let point1_bytes = base64::decode(&point1_b64).unwrap_or_else(|_| vec![]);
+                let point2_bytes = base64::decode(&point2_b64).unwrap_or_else(|_| vec![]);
+
+                match crypto::ristretto_point_sub(&point1_bytes, &point2_bytes) {
+                    Ok(result) => to_js_string(ctx, base64::encode(result)),
+                    Err(e) => {
+                        env::log_str(&format!("ristretto_point_sub error: {}", e));
+                        to_js_string(ctx, String::new())
+                    }
+                }
+            },
+            2,
+        );
+
+        add_function_to_js(
+            "verify_reencryption_proof",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let old_c1 = arg_to_str(ctx, 0, argv);
+                let old_c2 = arg_to_str(ctx, 1, argv);
+                let old_pk = arg_to_str(ctx, 2, argv);
+                let new_c1 = arg_to_str(ctx, 3, argv);
+                let new_c2 = arg_to_str(ctx, 4, argv);
+                let new_pk = arg_to_str(ctx, 5, argv);
+                let commit_r_old = arg_to_str(ctx, 6, argv);
+                let commit_s_old = arg_to_str(ctx, 7, argv);
+                let commit_r_new = arg_to_str(ctx, 8, argv);
+                let commit_s_new = arg_to_str(ctx, 9, argv);
+                let response_s = arg_to_str(ctx, 10, argv);
+                let response_r_old = arg_to_str(ctx, 11, argv);
+                let response_r_new = arg_to_str(ctx, 12, argv);
+
+                match crypto::verify_reencryption_proof_base64(
+                    &old_c1, &old_c2, &old_pk,
+                    &new_c1, &new_c2, &new_pk,
+                    &commit_r_old, &commit_s_old,
+                    &commit_r_new, &commit_s_new,
+                    &response_s, &response_r_old, &response_r_new,
+                ) {
+                    Ok(true) => 1i64,
+                    Ok(false) => 0i64,
+                    Err(e) => {
+                        env::log_str(&format!("verify_reencryption_proof error: {}", e));
+                        0i64
+                    }
+                }
+            },
+            13,
+        );
+
+        // NFT transfer function for marketplace
+        add_function_to_js(
+            "internal_transfer_unguarded",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let token_id = arg_to_str(ctx, 0, argv).to_string();
+                let from = arg_to_str(ctx, 1, argv).parse().unwrap();
+                let to = arg_to_str(ctx, 2, argv).parse().unwrap();
+
+                let contract = CONTRACT_REF as *mut Contract;
+                (*contract).tokens.internal_transfer_unguarded(&token_id, &from, &to);
+
+                1i64 // Return success
+            },
+            3,
+        );
+
+        // Storage functions for encrypted content (with ENC_ prefix for isolation)
+        add_function_to_js(
+            "storage_read",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let key = arg_to_str(ctx, 0, argv);
+                let mut prefixed_key = ENCRYPTED_CONTENT_STORAGE_PREFIX.to_owned();
+                prefixed_key.push_str(&key);
+
+                match env::storage_read(prefixed_key.as_bytes()) {
+                    Some(value) => {
+                        // Return the value as a string
+                        match String::from_utf8(value) {
+                            Ok(s) => to_js_string(ctx, s),
+                            Err(_) => 0i64 // Return null for invalid UTF-8
+                        }
+                    }
+                    None => 0i64 // Return JS null for non-existent keys
+                }
+            },
+            1,
+        );
+
+        add_function_to_js(
+            "storage_write",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let key = arg_to_str(ctx, 0, argv);
+                let value = arg_to_str(ctx, 1, argv);
+                let mut prefixed_key = ENCRYPTED_CONTENT_STORAGE_PREFIX.to_owned();
+                prefixed_key.push_str(&key);
+
+                env::storage_write(prefixed_key.as_bytes(), value.as_bytes());
+                0i64 // Return undefined
+            },
+            2,
+        );
+
+        add_function_to_js(
+            "storage_remove",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let key = arg_to_str(ctx, 0, argv);
+                let mut prefixed_key = ENCRYPTED_CONTENT_STORAGE_PREFIX.to_owned();
+                prefixed_key.push_str(&key);
+
+                env::storage_remove(prefixed_key.as_bytes());
+                0i64 // Return undefined
+            },
+            1,
+        );
+
+        add_function_to_js(
+            "transfer",
+            |ctx: i32, _this_val: i64, _argc: i32, argv: i32| -> i64 {
+                let receiver_id: AccountId = arg_to_str(ctx, 0, argv).parse().unwrap();
+                let amount_str = arg_to_str(ctx, 1, argv);
+                let amount: u128 = amount_str.parse().unwrap();
+
+                let promise_idx = env::promise_batch_create(&receiver_id);
+                env::promise_batch_action_transfer(promise_idx, NearToken::from_yoctonear(amount));
+
+                0i64 // Return undefined
+            },
+            2,
+        );
     }
 
     fn load_js_bytecode(&self) -> i64 {
@@ -106,7 +298,20 @@ impl Contract {
         env::storage_write(JS_BYTECODE_STORAGE_KEY, &bytecode);
     }
 
+    /// Call a JavaScript function (view-only, cannot modify storage)
     pub fn call_js_func(&self, function_name: String) {
+        let jsmod = self.load_js_bytecode();
+
+        unsafe {
+            self.add_js_functions();
+            let function_name_cstr = CString::new(function_name).unwrap();
+            js_call_function(jsmod, function_name_cstr.as_ptr() as i32);
+        }
+    }
+
+    /// Call a JavaScript function that can modify storage
+    #[payable]
+    pub fn call_js_func_mut(&mut self, function_name: String) {
         let jsmod = self.load_js_bytecode();
 
         unsafe {
