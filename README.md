@@ -1,61 +1,136 @@
-Rust WebAssembly smart contracts for NEAR with Javascript runtime
-================================================================
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./docs/static/image/logo-dark.png">
+    <img alt="spin logo" src="./docs/static/image/logo.png" width="300" height="128">
+  </picture>
+  <p>Spin is a framework for building, deploying, and running fast, secure, and composable cloud microservices with WebAssembly.</p>
+      <a href="https://github.com/spinframework/spin/actions/workflows/build.yml"><img src="https://github.com/spinframework/spin/actions/workflows/build.yml/badge.svg" alt="build status" /></a>
+      <a href="https://cloud-native.slack.com/archives/C089NJ9G1V0"><img alt="Slack" src="https://img.shields.io/badge/slack-spin-green.svg?logo=slack"></a>
+      <a href="https://www.bestpractices.dev/projects/10373"><img src="https://www.bestpractices.dev/projects/10373/badge"></a>
+</div>
 
-This project shows compiling and embedding [QuickJS](https://bellard.org/quickjs/) with https://github.com/near/near-sdk-rs for being able to execute custom JavaScript code inside a smart contract written in Rust. It contains examples of standard contracts like NFT and Fungible token, with JavaScript customization layers on top. There are also examples of a [web4](https://github.com/vgrichina/web4) contract.
+## What is Spin?
 
-Check out the youtube playlist with videos showing the project:
+Spin is an open source framework for building and running fast, secure, and
+composable cloud microservices with WebAssembly. It aims to be the easiest way
+to get started with WebAssembly microservices, and takes advantage of the latest
+developments in the
+[WebAssembly component model](https://github.com/WebAssembly/component-model)
+and [Wasmtime](https://wasmtime.dev/) runtime.
 
-https://www.youtube.com/watch?v=JBZEr__pid0&list=PLv5wm4YuO4IwVNrSsYxeqKrtQZYRML03Z
+Spin offers a simple CLI that helps you create, distribute, and execute
+applications, and in the next sections we will learn more about Spin
+applications and how to get started.
 
-Also check out the [end-to-end](#end-to-end-tests-using-near-workspaces) tests for how to use the contracts from this project.
+## Getting started
 
-# Purpose / NEAR ecosystem impact
+See the [Install Spin](https://spinframework.dev/install) page of the [Spin documentation](https://spinframework.dev) for a detailed
+guide on installing and configuring Spin, but in short run the following commands:
+```bash
+curl -fsSL https://spinframework.dev/downloads/install.sh | bash
+sudo mv ./spin /usr/local/bin/spin
+```
 
-The purpose of the project is to provide an example and starting point for adding the Javascript layer in Rust smart contracts. Being able to execute custom Javascript code makes it possible to configure behaviour of Rust smart contracts in a dynamic way through code, and not just JSON configuration. My own motivation was to run Javascript music code inside a smart contract ( see the [WebAssembly Music](https://github.com/petersalomonsen/javascriptmusic) project), and then I also saw this [tweet](https://x.com/ilblackdragon/status/1561368373618941954) that the combination of Javascript and Rust WebAssembly was needed for other projects in the NEAR ecosystem too.
+Alternatively, you could [build Spin from source](https://spinframework.dev/contributing-spin).
 
-Since this project has examples for various Rust standard smart contracts on NEAR, the desired impact for projects in the NEAR ecosystem is to use these in their smart contract implementations. The combination of a customizable javascript layer on top of a rock solid Rust smart contract aims to provide flexibility without sacrificing robustness. The project also shows you how to use testing framework to ensure full End to End tests of the use cases. A comprehensive example of this is the OpenAI proxy using Fungible Tokens for covering usage costs ( see list of examples below ).
+To get started writing apps, follow the [quickstart guide](https://spinframework.dev/quickstart/),
+and then follow the
+[Rust](https://spinframework.dev/rust-components/), [JavaScript](https://spinframework.dev/javascript-components), [Python](https://spinframework.dev/python-components), or [Go](https://spinframework.dev/go-components/)
+language guides, and the [guide on writing Spin applications](https://spinframework.dev/writing-apps/).
 
-# Devcontainer / github actions
+## Language support
 
-All the pre-requisities for getting the project up and running can be found in the [.devcontainer](./.devcontainer) folder, which will be automaticall set up if using a github codespace.
+WebAssembly is a language-agnostic runtime: you can build WebAssembly components from a variety of source languages. Spin SDKs are available for several languages, including:
 
-The github actions also shows how to build and run all the examples.
+* JavaScript: https://github.com/spinframework/spin-js-sdk
+* Rust: https://crates.io/crates/spin-sdk
+* Go: https://pkg.go.dev/github.com/fermyon/spin/sdk/go/v2
+* Python: https://github.com/spinframework/spin-python-sdk
+* Zig: https://github.com/dasimmet/zig-spin (third party)
+* Moonbit: https://github.com/gmlewis/spin-moonbit-sdk (third party)
 
-# Architecture / structure
+> The Spin framework team supports the JavaScript, Rust, Go, and Python SDKs. Other language integrations are supported by their authors, and we're grateful to them for their work!
 
-QuickJS is built with [Emscripten](https://emscripten.org/) to a static library. Another C library, which can be found in the [quickjslib](./quickjslib/) folder, is providing a simplified interface to QuickJS, which is then linked to the Rust code along with other relevant static libraries from the Emscripten distribution ( such as the C standard library, allocator, WASI etc. ).
+## Usage
 
-See the entire build process in [build.rs](./build.rs).
+Below is an example of using the `spin` CLI to create a new Spin application.  To run the example you will need to install the `wasm32-wasip1` target for Rust.
 
-In the Rust part, there are contract implementations exposing functions for submitting JavaScript code. Both in the internal bytecode format of QuickJS, and pure JS source code.
+```bash
+$ rustup target add wasm32-wasip1
+```
 
-# Unit tests running in WebAssembly
+First, run the `spin new` command to create a Spin application from a template.
+```bash
+# Create a new Spin application named 'hello-rust' based on the Rust http template, accepting all defaults
+$ spin new --accept-defaults -t http-rust hello-rust
+```
+Running the `spin new` command created a `hello-rust` directory with all the necessary files for your application. Change to the `hello-rust` directory and build the application with `spin build`, then run it locally with `spin up`:
 
-While it's common and more straightforward for NEAR smart contracts and many other Rust WebAssembly projects, to have their unit tests compiled to the native platform, this project runs the unit test in a WebAssembly runtime. The reason for this is because of the static libraries compiled from C, which are already targeting Wasm. One limitation when running tests inside the Wasm runtime is that you cannot catch panics, and so testing the error messages has to be done in the end-2-end tests
+```bash
+# Compile to Wasm by executing the `build` command.
+$ spin build
+Executing the build command for component hello-rust: cargo build --target wasm32-wasip1 --release
+    Finished release [optimized] target(s) in 0.03s
+Successfully ran the build command for the Spin components.
 
-# End-to-end tests using near-workspaces
+# Run the application locally.
+$ spin up
+Logging component stdio to ".spin/logs/"
 
-In the [e2e](./e2e/) folder and also within the [examples](./examples/) folders there are test files that demonstrates deployment and interaction with the contract using [near-workspaces-js](https://github.com/near/near-workspaces-js). All these tests are being run as part of the github actions pipeline, but you can also look at this for examples on how to use the contracts produced in this project.
+Serving http://127.0.0.1:3000
+Available Routes:
+  hello-rust: http://127.0.0.1:3000 (wildcard)
+```
 
-# Local JS test environment
+That's it! Now that the application is running, use your browser or cURL in another shell to try it out:
 
-A simple mocking of NEAR interfaces for simulation of a smart contract directly in NodeJS or in the browser can be found in [localjstestenv](./localjstestenv/README.md).
+```bash
+# Send a request to the application.
+$ curl -i 127.0.0.1:3000
+HTTP/1.1 200 OK
+content-type: text/plain
+transfer-encoding: chunked
+date: Sun, 02 Mar 2025 20:09:11 GMT
 
-# Example contracts
+Hello World!
+```
 
-- [NFT](./examples/nft/README.md) - The standard NFT contract, customizable with JavaScript
-- [Fungible Token](./examples/fungibletoken/README.md) - The standard FT contract, customizable with JavaScript
-- [OpenAI proxy](./examples/aiproxy/REAdME.md) - A proxy to an OpenAI API server interacting with the Fungible Token contract for covering usage costs
-- [Minimum Web4](./examples/minimumweb4/README.md) - Implement the web4 interface in JavaScript to serve a website from the smart contract
-- "[PureJS](./examples/purejs/README.md)" - Precompile the JS bytecode into the contract, and provide direct exports to the JS functions.
-- [Web4 and a WebAssembly Music showcase](./web4/README.md) - JavaScript from WebAssembly Music running in the smart contract
+You can make the app do more by editting the `src/lib.rs` file in the `hello-rust` directory using your favorite editor or IDE. To learn more about writing Spin applications see [Writing Applications](https://spinframework.dev/writing-apps) in the Spin documentation.  To learn how to publish and distribute your application see the [Publishing and Distribution](https://spinframework.dev/distributing-apps) guide in the Spin documentation.
 
-# Goals and roadmap
+## Language Support for Spin Features
 
-The project has already fulfilled the goal of compiling QuickJS to WebAssembly and integrate with a Rust smart contract. There is also a proof-of-concept Fungible Token contract integrated with a proxy to an OpenAI API. The goals ahead is to support the live implementations of this into the [WebAssembly Music](https://github.com/petersalomonsen/javascriptmusic) project and [Ariz portfolio](https://github.com/arizas/near-account-report).
+The table below summarizes the [feature support](https://spinframework.dev/language-support-overview) in each of the language SDKs.
 
-Integrating with NEAR AI is also a natural next step in the evolution. Today NEAR AI is accessible by smarts contract emitting events, and with the Javascript layer provided here, it is possible to provide such events in a more dynamic way. The logic to generate the events can be altered without having to redeploy the entire smart contract, and also using function access keys instead of full access keys.
+| Feature | Rust SDK Supported? | TypeScript SDK Supported? | Python SDK Supported? | Tiny Go SDK Supported? | C# SDK Supported? |
+|-----|-----|-----|-----|-----|-----|
+| **Triggers** |
+| [HTTP](https://spinframework.dev/http-trigger) | Supported | Supported | Supported | Supported | Supported |
+| [Redis](https://spinframework.dev/redis-trigger) | Supported | Supported | Supported | Supported | Not Supported |
+| **APIs** |
+| [Outbound HTTP](https://spinframework.dev/rust-components.md#sending-outbound-http-requests) | Supported | Supported | Supported | Supported | Supported |
+| [Configuration Variables](https://spinframework.dev/variables) | Supported | Supported | Supported | Supported | Supported |
+| [Key Value Storage](https://spinframework.dev/kv-store-api-guide) | Supported | Supported | Supported | Supported | Not Supported |
+| [SQLite Storage](https://spinframework.dev/sqlite-api-guide) | Supported | Supported | Supported | Supported | Not Supported |
+| [MySQL](https://spinframework.dev/rdbms-storage#using-mysql-and-postgresql-from-applications) | Supported | Supported | Not Supported | Supported | Not Supported |
+| [PostgreSQL](https://spinframework.dev/rdbms-storage#using-mysql-and-postgresql-from-applications) | Supported | Supported | Not Supported | Supported | Supported |
+| [Outbound Redis](https://spinframework.dev/rust-components.md#storing-data-in-redis-from-rust-components) | Supported | Supported | Supported | Supported | Supported |
+| [Serverless AI](https://spinframework.dev/serverless-ai-api-guide) | Supported | Supported | Supported | Supported | Not Supported |
+| **Extensibility** |
+| [Authoring Custom Triggers](https://spinframework.dev/extending-and-embedding) | Supported | Not Supported | Not Supported | Not Supported | Not Supported |
 
-Finally, for the project to get more attention, it needs more documentation. Even though it already contains comprehensive test cases that also serves as code examples, the documentation explaining the concepts can be developed even more.
+## Getting Involved and Contributing
 
-These are all goals ahead for 2025.
+We are delighted that you are interested in making Spin better! Thank you!
+
+Each Monday at 2:30pm UTC (odd weeks) and 9:00pm UTC (even weeks), we meet to discuss Spin issues, roadmap, and ideas in our Spin Project Meetings. Link to the meeting can be found in the Spin Project Meeting agenda below.
+
+The [Spin Project Meeting agenda](https://docs.google.com/document/d/1EG392gb8Eg-1ZEPDy18pgFZvMMrdAEybpCSufFXoe00/edit?usp=sharing) is a public document. The document contains a rolling agenda with the date and time of each meeting, the Zoom link, and topics of discussion for the day. You will also find the meeting minutes for each meeting and the link to the recording. If you have something you would like to demo or discuss at the project meeting, we encourage you to add it to the agenda.
+
+You can find the contributing guide [here](https://spinframework.dev/contributing-spin).
+
+## Stay in Touch
+
+Follow us on Twitter: [@spinframework](https://twitter.com/spinframework)
+
+You can join the Spin community in the [Spin CNCF Slack channel](https://cloud-native.slack.com/archives/C089NJ9G1V0) where you can ask questions, get help, and show off the cool things you are doing with Spin!
+
