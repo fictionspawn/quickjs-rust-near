@@ -345,6 +345,19 @@ impl Contract {
         self.store_js_bytecode(compile_js(javascript, Some("main.js".to_string())));
     }
 
+    pub fn post_javascript_base64(&mut self, javascript_base64: String) {
+        if env::predecessor_account_id() != self.tokens.owner_id {
+            env::panic_str("Unauthorized");
+        }
+        // Decode from base64
+        let javascript_bytes = base64::decode(&javascript_base64)
+        .unwrap_or_else(|_| env::panic_str("Invalid base64"));
+        let javascript = String::from_utf8(javascript_bytes)
+        .unwrap_or_else(|_| env::panic_str("Invalid UTF-8"));
+    
+        self.store_js_bytecode(compile_js(javascript, Some("main.js".to_string())));
+    }
+
     pub fn post_content(&mut self, key: String, valuebase64: String) {
         if env::predecessor_account_id() != self.tokens.owner_id {
             env::panic_str("Unauthorized");
